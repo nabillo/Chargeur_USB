@@ -1,1 +1,0 @@
- dist/PDFSUSB_2550_XC8/production/doprnt.d  dist/PDFSUSB_2550_XC8/production/doprnt.p1:  D:/Info/Soft/MPLABX/v1.35/sources/common/doprnt.c

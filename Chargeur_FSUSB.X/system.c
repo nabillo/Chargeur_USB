@@ -3,8 +3,9 @@
 #include "system_config.h"
 #include "app_custom_cdc.h"
 #include <usb/usb.h>
+#include "user.h"
 
-
+extern enum State cur_State;
 
 void interrupt SYS_InterruptHigh() {
     //Check which interrupt flag caused the interrupt.

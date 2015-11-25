@@ -63,7 +63,7 @@ MAIN_RETURN main(void)
         // Application-specific tasks.
         APP_CustomCDCTasks();
 
-        CDCTxService();
+        //CDCTxService();
     }//end while
 }//end main
 

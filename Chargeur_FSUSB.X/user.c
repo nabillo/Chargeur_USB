@@ -5,6 +5,7 @@
 #include <xc.h>         /* XC8 General Include File */
 #include <stdint.h>         /* For uint8_t definition */
 #include <stdbool.h>        /* For true/false definition */
+#include <stdio.h>
 #include <adc.h>
 #include <string.h>
 #include <timers.h>
@@ -22,6 +23,7 @@ extern unsigned short long precondition_Time;
 extern unsigned short long charge_Time;
 extern unsigned short timeout;
 extern long seconds;
+extern char msg_info[256];
 
 
 /******************************************************************************/
@@ -50,7 +52,13 @@ unsigned int calc_Time(long initial)
  */
 void InitCharger(void)
 {
-    cur_State = LIPO_ALGO_STARTED;
+    cur_State = CHARGE_ERROR;
+    TRISBbits.RB0 = 1;
+    INTCONbits.INT0E = 1; //enable Interrupt 0 (RB0 as interrupt)
+    INTCON2bits.INTEDG0 = 0; //cause interrupt at falling edge
+    INTCONbits.INT0F = 0; //reset interrupt flag
+    //ei();
+    
     strncpy(battery.battery_type,"LIPO\0",5);
     battery.charge.restore_Lowest_Voltage = 5;
     battery.number_of_cells = 1;
@@ -241,7 +249,8 @@ short check_Precondition(short *precondition)
         *precondition = false;
     }
 
-    APP_USB_send("voltage : %f, precondition : %hd",voltage,precondition);
+    sprintf(msg_info,"voltage : %f, precondition : %hd",voltage,precondition);
+    APP_USB_send(msg_info);
 
     return OK;
 }

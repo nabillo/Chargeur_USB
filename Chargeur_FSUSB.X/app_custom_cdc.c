@@ -33,10 +33,6 @@
 #include "user.h"
 #include "battery.h"
 
-static uint8_t  usbOutCnt;
-static uint8_t  usbOutBuffer[CDC_DATA_OUT_EP_SIZE];
-static uint8_t  usbInBuffer[CDC_DATA_OUT_EP_SIZE];
-
 
 /** P U B L I C    P R O T O T Y P E S ****************************************/
 
@@ -62,6 +58,7 @@ unsigned short long charge_Time;
 tPIParams PI; // Data Structure for PI controller
 unsigned short timeout;
 long seconds;
+char msg_info[256];
 
 
 /*********************************************************************
@@ -97,11 +94,14 @@ void APP_CustomCDCInitialize()
 * Output: None
 *
 ********************************************************************/
-void APP_USB_send(const char *format, ...)
+void APP_USB_send(char * msg)
 {
-    va_list args;
-    va_start(args,format);
-    sprintf(usbInBuffer,format,args);
+    static uint8_t  usbOutBuffer[CDC_DATA_OUT_EP_SIZE];
+    int n;
+    
+    memset(usbOutBuffer,'\0',sizeof(usbOutBuffer));
+    n = sprintf(usbOutBuffer,"%s",msg);
+    
     if (( USBGetDeviceState() < CONFIGURED_STATE ) || ( USBIsDeviceSuspended() == true ))
     {
         return;
@@ -110,10 +110,10 @@ void APP_USB_send(const char *format, ...)
     {
         if (mUSBUSARTIsTxTrfReady())
         {
-            putUSBUSART(usbInBuffer,strlen(usbInBuffer));
+            putUSBUSART(usbOutBuffer,n);
         }
     }
-
+    CDCTxService();
 }
 
 /*********************************************************************
@@ -139,7 +139,14 @@ void APP_CustomCDCTasks()
     char end[10];
     char msg_Error[100];
 
-    APP_USB_send("%s","Application initialized");
+    memset(msg_Error, '\0', sizeof(msg_Error));
+    
+    memset(msg_info, '\0', sizeof(msg_info));
+    sprintf(msg_info,"Application initialized\n");
+    APP_USB_send(msg_info);
+    memset(msg_info, '\0', sizeof(msg_info));
+    sprintf(msg_info,"cur_State <%d>\n",cur_State);
+    APP_USB_send(msg_info);
     
     res = INDEFINED;
     switch (cur_State)
@@ -374,7 +381,7 @@ void APP_CustomCDCTasks()
                 }
                 else if (strncmp(end,"TIMER",5))
                 {
-                    strcpy(msg_Error,"CC safety timer ended");
+                    strcpy(msg_Error,"CC safety timer ended\n");
                     cur_State = CHARGE_ERROR;
                 }
                 else if (strncmp(end,"PROGRESS",8))
@@ -447,6 +454,7 @@ void APP_CustomCDCTasks()
 
             break;
     }
+    APP_USB_send(msg_Error);
     
 }//end APP_CustomCDCTasks
 

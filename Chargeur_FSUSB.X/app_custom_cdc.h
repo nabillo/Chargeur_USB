@@ -9,7 +9,7 @@
 
 //------------------------------------------- P U B L I C    P R O T O T Y P E S
 void APP_CustomCDCInitialize(void);     // legacy
-void APP_USB_send(const char *format, ...);
+void APP_USB_send(char *msg);
 void APP_CustomCDCTasks(void);          // legacy ProcessIO()
 
 void APP_USBCBSuspend(void);            // empty ;-)
